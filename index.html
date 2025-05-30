@@ -61,7 +61,7 @@
       font-size: 1.1rem;
       background: #ff3131;
       color: white;
-      border: none; 
+      border: none;
       border-radius: 12px;
       cursor: pointer;
       transition: background 0.3s;
@@ -93,12 +93,14 @@
   <div class="container">
     <h1>Calculadora +17%</h1>
 
-    <label for="quantidade">Quantos serviços deseja calcular?</label>
-    <input type="number" id="quantidade" min="1" placeholder="Ex: 2" onchange="gerarCampos()"/>
+    <label for="qtdServicos">Quantidade de Serviços:</label>
+    <input type="number" id="qtdServicos" min="1" max="20" value="1" onchange="gerarCampos()">
 
-    <div id="camposServicos"></div>
+    <div id="servicosContainer">
+      <!-- Campos dinâmicos aparecem aqui -->
+    </div>
 
-    <button onclick="calcularTodos()">Calcular Valor</button>
+    <button onclick="calcularValor()">Calcular Valor</button>
 
     <div id="resultado" class="result" style="display:none;"></div>
     <button onclick="copiarTexto()" id="botaoCopiar" style="display:none;">Copiar Resultado</button>
@@ -115,51 +117,56 @@
     }
 
     function gerarCampos() {
-      const quantidade = parseInt(document.getElementById('quantidade').value);
-      const container = document.getElementById('camposServicos');
-      container.innerHTML = '';
+      const container = document.getElementById('servicosContainer');
+      const qtd = parseInt(document.getElementById('qtdServicos').value);
+      container.innerHTML = "";
 
-      for (let i = 1; i <= quantidade; i++) {
+      for (let i = 1; i <= qtd; i++) {
         container.innerHTML += `
-          <label for="nomeServico${i}">Nome do Serviço ${i}:</label>
-          <input type="text" id="nomeServico${i}" placeholder="Ex: Troca de plano">
+          <label for="nome${i}">Nome do Serviço ${i}:</label>
+          <input type="text" id="nome${i}" placeholder="Ex: Troca de plano ${i}">
 
-          <label for="valorServico${i}">Valor do Serviço ${i} (R$):</label>
-          <input type="text" id="valorServico${i}" placeholder="0,00" oninput="formatarValor(this)">
+          <label for="valor${i}">Valor do Serviço ${i} (R$):</label>
+          <input type="text" id="valor${i}" placeholder="0,00" oninput="formatarValor(this)">
         `;
       }
     }
 
-    function calcularTodos() {
-      const quantidade = parseInt(document.getElementById('quantidade').value);
-      let resultadoFinal = '';
-      let temErro = false;
+    function calcularValor() {
+      const qtd = parseInt(document.getElementById('qtdServicos').value);
+      const resultadoDiv = document.getElementById('resultado');
+      const botaoCopiar = document.getElementById('botaoCopiar');
+      const mensagem = document.getElementById('mensagemCopiado');
+      mensagem.style.display = 'none';
 
-      for (let i = 1; i <= quantidade; i++) {
-        const nome = document.getElementById(`nomeServico${i}`).value.trim();
-        const valorRaw = document.getElementById(`valorServico${i}`).value.replace(/\./g, "").replace(",", ".");
+      let frases = [];
 
-        if (!nome || !valorRaw) {
-          resultadoFinal += `⚠️ Serviço ${i} incompleto. Preencha todos os campos.<br>`;
-          temErro = true;
-          continue;
+      for (let i = 1; i <= qtd; i++) {
+        const nome = document.getElementById(`nome${i}`).value.trim();
+        let valorStr = document.getElementById(`valor${i}`).value.replace(/\./g, "").replace(",", ".");
+
+        if (!nome || !valorStr) {
+          resultadoDiv.innerHTML = "Preencha todos os campos de nome e valor.";
+          resultadoDiv.style.display = 'block';
+          botaoCopiar.style.display = 'none';
+          return;
         }
 
-        const valor = parseFloat(valorRaw);
-        const valorCom17 = valor * 1.17;
-        const valorFormatado = valorCom17.toLocaleString("pt-BR", {
+        const valor = parseFloat(valorStr);
+        const valorFinal = valor * 1.17;
+        const valorFormatado = valorFinal.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL"
         });
 
-        resultadoFinal += `O custo do *${nome}* é de *${valorFormatado}* a ser cobrados em sua próxima fatura. Posso prosseguir?<br><br>`;
+        frases.push(`O custo do *${nome}* é de *${valorFormatado}*`);
       }
 
-      const resultadoDiv = document.getElementById('resultado');
-      resultadoDiv.innerHTML = resultadoFinal;
+      const textoFinal = frases.join('\n') + `\nPosso prosseguir?`;
+
+      resultadoDiv.innerText = textoFinal;
       resultadoDiv.style.display = 'block';
-      document.getElementById('botaoCopiar').style.display = temErro ? 'none' : 'block';
-      document.getElementById('mensagemCopiado').style.display = 'none';
+      botaoCopiar.style.display = 'block';
     }
 
     function copiarTexto() {
@@ -168,6 +175,9 @@
         document.getElementById("mensagemCopiado").style.display = "block";
       });
     }
+
+    // Gerar campos iniciais
+    window.onload = gerarCampos;
   </script>
 </body>
 </html>
