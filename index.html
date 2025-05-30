@@ -43,7 +43,7 @@
       font-size: 0.95rem;
     }
 
-    input[type="text"] {
+    input[type="text"], input[type="number"] {
       width: 100%;
       padding: 0.75rem;
       margin-bottom: 1rem;
@@ -93,13 +93,12 @@
   <div class="container">
     <h1>Calculadora +17%</h1>
 
-    <label for="nomeServico">Nome do Serviço:</label>
-    <input type="text" id="nomeServico" placeholder="Ex: Troca de plano">
+    <label for="quantidade">Quantos serviços deseja calcular?</label>
+    <input type="number" id="quantidade" min="1" placeholder="Ex: 2" onchange="gerarCampos()"/>
 
-    <label for="valorServico">Valor do Serviço (R$):</label>
-    <input type="text" id="valorServico" placeholder="0,00" oninput="formatarValor(this)">
+    <div id="camposServicos"></div>
 
-    <button onclick="calcularValor()">Calcular Valor</button>
+    <button onclick="calcularTodos()">Calcular Valor</button>
 
     <div id="resultado" class="result" style="display:none;"></div>
     <button onclick="copiarTexto()" id="botaoCopiar" style="display:none;">Copiar Resultado</button>
@@ -115,33 +114,52 @@
       input.value = valor;
     }
 
-    function calcularValor() {
-      const nomeServico = document.getElementById('nomeServico').value.trim();
-      let valorInput = document.getElementById('valorServico').value.replace(/\./g, "").replace(",", ".");
-      const resultadoDiv = document.getElementById('resultado');
-      const botaoCopiar = document.getElementById('botaoCopiar');
-      const mensagem = document.getElementById('mensagemCopiado');
-      mensagem.style.display = 'none';
+    function gerarCampos() {
+      const quantidade = parseInt(document.getElementById('quantidade').value);
+      const container = document.getElementById('camposServicos');
+      container.innerHTML = '';
 
-      if (!nomeServico || !valorInput) {
-        resultadoDiv.innerHTML = "Preencha o nome do serviço e o valor.";
-        resultadoDiv.style.display = 'block';
-        botaoCopiar.style.display = 'none';
-        return;
+      for (let i = 1; i <= quantidade; i++) {
+        container.innerHTML += `
+          <label for="nomeServico${i}">Nome do Serviço ${i}:</label>
+          <input type="text" id="nomeServico${i}" placeholder="Ex: Troca de plano">
+
+          <label for="valorServico${i}">Valor do Serviço ${i} (R$):</label>
+          <input type="text" id="valorServico${i}" placeholder="0,00" oninput="formatarValor(this)">
+        `;
+      }
+    }
+
+    function calcularTodos() {
+      const quantidade = parseInt(document.getElementById('quantidade').value);
+      let resultadoFinal = '';
+      let temErro = false;
+
+      for (let i = 1; i <= quantidade; i++) {
+        const nome = document.getElementById(`nomeServico${i}`).value.trim();
+        const valorRaw = document.getElementById(`valorServico${i}`).value.replace(/\./g, "").replace(",", ".");
+
+        if (!nome || !valorRaw) {
+          resultadoFinal += `⚠️ Serviço ${i} incompleto. Preencha todos os campos.<br>`;
+          temErro = true;
+          continue;
+        }
+
+        const valor = parseFloat(valorRaw);
+        const valorCom17 = valor * 1.17;
+        const valorFormatado = valorCom17.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+
+        resultadoFinal += `O custo do *${nome}* é de *${valorFormatado}* a ser cobrados em sua próxima fatura. Posso prosseguir?<br><br>`;
       }
 
-      const valor = parseFloat(valorInput);
-      const valorComAcrescimo = valor * 1.17;
-      const valorFormatado = valorComAcrescimo.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
-
-      const frase = `O custo do *${nomeServico}* é de *${valorFormatado}* a ser cobrados em sua próxima fatura. Posso prosseguir?`;
-
-      resultadoDiv.innerText = frase;
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = resultadoFinal;
       resultadoDiv.style.display = 'block';
-      botaoCopiar.style.display = 'block';
+      document.getElementById('botaoCopiar').style.display = temErro ? 'none' : 'block';
+      document.getElementById('mensagemCopiado').style.display = 'none';
     }
 
     function copiarTexto() {
