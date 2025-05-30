@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora 17%</title>
+  <link rel="icon" href="https://i.postimg.cc/5yTDf82D/C-7.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-image: url('https://i.postimg.cc/vBRsQLgf/COMERCIAL-VENDE-2.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      margin: 0;
+      padding: 2rem;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 1rem;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      background: #ff3131;
+      color: white;
+      border: none; 
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background: #000d73;
+    }
+
+    .result {
+      background: #000d73;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 12px;
+      border-left: 5px solid #e00404;
+    }
+
+    .copy-success {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #90ee90;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora +17%</h1>
+
+    <label for="nomeServico">Nome do Serviço:</label>
+    <input type="text" id="nomeServico" placeholder="Ex: Troca de plano">
+
+    <label for="valorServico">Valor do Serviço (R$):</label>
+    <input type="text" id="valorServico" placeholder="0,00" oninput="formatarValor(this)">
+
+    <button onclick="calcularValor()">Calcular Valor</button>
+
+    <div id="resultado" class="result" style="display:none;"></div>
+    <button onclick="copiarTexto()" id="botaoCopiar" style="display:none;">Copiar Resultado</button>
+    <div id="mensagemCopiado" class="copy-success" style="display:none;">Resultado copiado com sucesso!</div>
+  </div>
+
+  <script>
+    function formatarValor(input) {
+      let valor = input.value.replace(/\D/g, "");
+      valor = (valor / 100).toFixed(2) + "";
+      valor = valor.replace(".", ",");
+      valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+      input.value = valor;
+    }
+
+    function calcularValor() {
+      const nomeServico = document.getElementById('nomeServico').value.trim();
+      let valorInput = document.getElementById('valorServico').value.replace(/\./g, "").replace(",", ".");
+      const resultadoDiv = document.getElementById('resultado');
+      const botaoCopiar = document.getElementById('botaoCopiar');
+      const mensagem = document.getElementById('mensagemCopiado');
+      mensagem.style.display = 'none';
+
+      if (!nomeServico || !valorInput) {
+        resultadoDiv.innerHTML = "Preencha o nome do serviço e o valor.";
+        resultadoDiv.style.display = 'block';
+        botaoCopiar.style.display = 'none';
+        return;
+      }
+
+      const valor = parseFloat(valorInput);
+      const valorComAcrescimo = valor * 1.17;
+      const valorFormatado = valorComAcrescimo.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+
+      const frase = `O custo do *${nomeServico}* é de *${valorFormatado}* a ser cobrados em sua próxima fatura. Posso prosseguir?`;
+
+      resultadoDiv.innerText = frase;
+      resultadoDiv.style.display = 'block';
+      botaoCopiar.style.display = 'block';
+    }
+
+    function copiarTexto() {
+      const texto = document.getElementById("resultado").innerText;
+      navigator.clipboard.writeText(texto).then(() => {
+        document.getElementById("mensagemCopiado").style.display = "block";
+      });
+    }
+  </script>
+</body>
+</html>
